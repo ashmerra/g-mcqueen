@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+android_home=${ANDROID_HOME:-"$HOME/Android/Sdk"}
+adb_bin="$android_home/platform-tools/adb"
+tailscale_ip=${ANDROID_TAILSCALE_IP:-100.104.51.10}
+
+if [[ $# -ne 2 ]]; then
+  echo "Usage: $0 PHONE_LAN_IP:PAIR_PORT PHONE_LAN_IP:DEBUG_PORT" >&2
+  echo "Both endpoints are shown under Developer options > Wireless debugging." >&2
+  exit 2
+fi
+
+"$adb_bin" pair "$1"
+"$adb_bin" connect "$2"
+"$adb_bin" -s "$2" tcpip 5555
+sleep 2
+"$adb_bin" connect "$tailscale_ip:5555"
+"$adb_bin" -s "$tailscale_ip:5555" get-state
+
+echo "Pairing complete. Future deployments use $tailscale_ip:5555."
+

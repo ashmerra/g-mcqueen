@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+android_home=${ANDROID_HOME:-"$HOME/Android/Sdk"}
+adb_bin="$android_home/platform-tools/adb"
+device=${ANDROID_DEVICE:-100.104.51.10:5555}
+package_name=com.victor.tailscaledeploytest
+
+"$project_dir/scripts/build-android"
+
+if ! "$adb_bin" -s "$device" get-state 2>/dev/null | grep -qx device; then
+  "$adb_bin" connect "$device" >/dev/null 2>&1 || true
+fi
+
+if ! "$adb_bin" -s "$device" get-state 2>/dev/null | grep -qx device; then
+  echo "The phone is not authorized at $device." >&2
+  echo "Run scripts/pair-android once while Wireless debugging is enabled." >&2
+  exit 2
+fi
+
+"$adb_bin" -s "$device" install --no-incremental -r -d \
+  "$project_dir/build/tailscale-deploy-test.apk"
+"$adb_bin" -s "$device" shell am force-stop "$package_name"
+"$adb_bin" -s "$device" shell am start -W -n \
+  "$package_name/com.godot.game.GodotAppLauncher"
+
+echo "Installed and launched $package_name on $device"
+
+if [[ ${1:-} == "--logs" ]]; then
+  exec "$adb_bin" -s "$device" logcat --pid="$("$adb_bin" -s "$device" shell pidof "$package_name" | tr -d '\r')"
+fi

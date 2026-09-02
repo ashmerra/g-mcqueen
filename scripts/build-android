@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+godot_bin=${GODOT_BIN:-"$HOME/.local/bin/godot"}
+android_home=${ANDROID_HOME:-"$HOME/Android/Sdk"}
+
+if [[ ! -x "$godot_bin" ]]; then
+  echo "Godot was not found at $godot_bin" >&2
+  exit 1
+fi
+
+export ANDROID_HOME="$android_home"
+export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/zulu-21-amd64}
+export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+
+mkdir -p "$project_dir/build"
+apk_tmp=$(mktemp "$project_dir/build/.tailscale-deploy-test.XXXXXX.apk")
+trap 'rm -f -- "$apk_tmp"' EXIT
+
+"$godot_bin" --headless --path "$project_dir" \
+  --export-debug Android "$apk_tmp"
+
+if [[ ! -s "$apk_tmp" ]]; then
+  echo "Godot did not produce an APK." >&2
+  exit 1
+fi
+
+"$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$apk_tmp"
+mv -- "$apk_tmp" "$project_dir/build/tailscale-deploy-test.apk"
+trap - EXIT
+
+echo "APK ready: $project_dir/build/tailscale-deploy-test.apk"

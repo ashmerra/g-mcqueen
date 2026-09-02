@@ -1,0 +1,56 @@
+[gd_scene format=3]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02745098, 0.047058824, 0.09019608, 1)
+
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -440.0
+offset_top = -240.0
+offset_right = 440.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 56
+alignment = 1
+
+[node name="Title" type="Label" parent="Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.33333334, 0.827451, 1, 1)
+theme_override_font_sizes/font_size = 72
+text = "DEPLOYMENT WORKS"
+horizontal_alignment = 1
+
+[node name="Message" type="Label" parent="Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9254902, 0.9529412, 1, 1)
+theme_override_font_sizes/font_size = 42
+text = "Built on Linux\nDelivered over Tailscale\nInstalled with ADB"
+horizontal_alignment = 1
+
+[node name="Detail" type="Label" parent="Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5568628, 0.6392157, 0.7607843, 1)
+theme_override_font_sizes/font_size = 28
+text = "Godot 4.7.2  |  Galaxy S23"
+horizontal_alignment = 1
+

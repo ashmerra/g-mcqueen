@@ -1,3 +1,10 @@
 /.godot/
 /build/
-
+/.env
+/.env.*
+/local.properties
+*.apk
+*.keystore
+*.jks
+*.p12
+/Voice 260901_194705.m4a

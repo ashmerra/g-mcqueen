@@ -5,7 +5,9 @@ project_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 android_home=${ANDROID_HOME:-"$HOME/Android/Sdk"}
 adb_bin="$android_home/platform-tools/adb"
 device=${ANDROID_DEVICE:-100.104.51.10:5555}
-package_name=com.victor.tailscaledeploytest
+package_name=com.victor.gmcqueen
+artifact_path="$project_dir/build/g-mcqueen.apk"
+launcher_activity=${ANDROID_LAUNCHER_ACTIVITY:-com.godot.game.GodotAppLauncher}
 
 "$project_dir/scripts/build-android"
 
@@ -20,13 +22,18 @@ if ! "$adb_bin" -s "$device" get-state 2>/dev/null | grep -qx device; then
 fi
 
 "$adb_bin" -s "$device" install --no-incremental -r -d \
-  "$project_dir/build/tailscale-deploy-test.apk"
+  "$artifact_path"
 "$adb_bin" -s "$device" shell am force-stop "$package_name"
 "$adb_bin" -s "$device" shell am start -W -n \
-  "$package_name/com.godot.game.GodotAppLauncher"
+  "$package_name/$launcher_activity"
 
 echo "Installed and launched $package_name on $device"
 
 if [[ ${1:-} == "--logs" ]]; then
-  exec "$adb_bin" -s "$device" logcat --pid="$("$adb_bin" -s "$device" shell pidof "$package_name" | tr -d '\r')"
+  pid=$("$adb_bin" -s "$device" shell pidof "$package_name" | tr -d '\r')
+  if [[ -z "$pid" ]]; then
+    echo "Could not find the G McQueen process for log filtering." >&2
+    exit 1
+  fi
+  exec "$adb_bin" -s "$device" logcat --pid="$pid"
 fi

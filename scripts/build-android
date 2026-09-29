@@ -4,6 +4,8 @@ set -euo pipefail
 project_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 godot_bin=${GODOT_BIN:-"$HOME/.local/bin/godot"}
 android_home=${ANDROID_HOME:-"$HOME/Android/Sdk"}
+artifact_path="$project_dir/build/g-mcqueen.apk"
+apksigner_bin=${APKSIGNER_BIN:-"$android_home/build-tools/36.0.0/apksigner"}
 
 if [[ ! -x "$godot_bin" ]]; then
   echo "Godot was not found at $godot_bin" >&2
@@ -15,8 +17,8 @@ export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/zulu-21-amd64}
 export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
 
 mkdir -p "$project_dir/build"
-apk_tmp=$(mktemp "$project_dir/build/.tailscale-deploy-test.XXXXXX.apk")
-trap 'rm -f -- "$apk_tmp"' EXIT
+apk_tmp=$(mktemp "$project_dir/build/.g-mcqueen.XXXXXX.apk")
+trap 'rm -f -- "$apk_tmp" "$apk_tmp.idsig"' EXIT
 
 "$godot_bin" --headless --path "$project_dir" \
   --export-debug Android "$apk_tmp"
@@ -26,8 +28,13 @@ if [[ ! -s "$apk_tmp" ]]; then
   exit 1
 fi
 
-"$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$apk_tmp"
-mv -- "$apk_tmp" "$project_dir/build/tailscale-deploy-test.apk"
+if [[ ! -x "$apksigner_bin" ]]; then
+  echo "Android apksigner was not found at $apksigner_bin" >&2
+  exit 1
+fi
+
+"$apksigner_bin" verify "$apk_tmp"
+mv -- "$apk_tmp" "$artifact_path"
 trap - EXIT
 
-echo "APK ready: $project_dir/build/tailscale-deploy-test.apk"
+echo "APK ready: $artifact_path"

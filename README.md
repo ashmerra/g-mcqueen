@@ -1,11 +1,21 @@
-# Tailscale Android deployment smoke test
+# G McQueen
 
-This is a static Godot view used to verify the complete development loop:
+G McQueen is a portrait flappy-style Godot game. Guide the baby pilot through
+the Lightning McQueen-inspired turbo pillars and beat your high score. Each
+cleared pillar celebrates with a random real “Mama” or “Dada” recording, while
+hitting a pillar plays the real “dat one” recording.
 
-1. Export an Android debug APK on this Linux machine.
-2. Reach the Galaxy S23 through Tailscale.
-3. Replace the installed app using ADB.
-4. Launch it automatically.
+## Controls
+
+- Tap the screen (or click with a mouse) to flap.
+- Press **Space** while testing on desktop to flap.
+- Tap/click after a crash to start a new run.
+
+## Android deployment
+
+The app package is `com.victor.gmcqueen` and the debug artifact is
+`build/g-mcqueen.apk`. The default target is the connected Galaxy S23 at
+`100.104.51.10:5555` over Tailscale.
 
 ## One-time phone pairing
 
@@ -47,3 +57,7 @@ Override the target when needed:
 ANDROID_DEVICE=another-device:5555 ./scripts/deploy-android
 ```
 
+`deploy-android` exports a signed debug APK, installs it with ADB, and launches
+the app. Set `GODOT_BIN`, `ANDROID_HOME`, `JAVA_HOME`, or `APKSIGNER_BIN` when
+your local tool paths differ. Set `ANDROID_LAUNCHER_ACTIVITY` only when using a
+custom Android activity template.

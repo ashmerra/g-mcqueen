@@ -3,8 +3,9 @@ config_version=5
 
 [application]
 
-config/name="Tailscale Deploy Test"
-config/icon="res://icon.svg"
+config/name="G McQueen"
+config/description="A portrait flappy game featuring a tiny turbo pilot."
+config/icon="res://assets/baby_head.png"
 run/main_scene="res://main.tscn"
 
 [display]
@@ -14,7 +15,13 @@ window/size/viewport_height=2400
 window/size/window_width_override=360
 window/size/window_height_override=800
 window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
 window/handheld/orientation=1
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+pointing/emulate_mouse_from_touch=false
 
 [rendering]
 

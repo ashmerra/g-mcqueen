@@ -62,6 +62,13 @@ var failure_voice_player: AudioStreamPlayer
 var score_voice_streams: Array[AudioStream] = [
 	preload("res://assets/sfx/mama.wav"),
 	preload("res://assets/sfx/dada.wav"),
+	preload("res://assets/sfx/mcqueen.wav"),
+	preload("res://assets/sfx/cars.wav"),
+	preload("res://assets/sfx/mater.wav"),
+	preload("res://assets/sfx/chef.wav"),
+	preload("res://assets/sfx/red.wav"),
+	preload("res://assets/sfx/fire_truck.wav"),
+	preload("res://assets/sfx/yeah.wav"),
 ]
 var failure_voice_stream: AudioStream = preload("res://assets/sfx/dat_one.wav")
 

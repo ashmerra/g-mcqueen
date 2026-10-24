@@ -5,6 +5,8 @@ the Lightning McQueen-inspired turbo pillars and beat your high score. Each
 cleared pillar celebrates with a random real “Mama” or “Dada” recording, while
 hitting a pillar plays the real “dat one” recording.
 
+**Play: https://ashmerra.github.io/g-mcqueen/**
+
 ## Controls
 
 - Tap the screen (or click with a mouse) to flap.
@@ -70,6 +72,10 @@ The `Web` export preset builds a single-threaded portrait web build into
 ```bash
 ./scripts/build-web
 ```
+
+Every push to `main` runs `.github/workflows/pages.yml`, which installs Godot
+and its single-threaded web templates (bump `GODOT_VERSION` there alongside
+your local Godot), exports the `Web` preset, and deploys it to GitHub Pages.
 
 `scripts/serve-web` serves `build/web` on `127.0.0.1:8096` and sends the
 precompressed `.gz` files to browsers that accept gzip. On this machine it runs

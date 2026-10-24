@@ -61,3 +61,26 @@ ANDROID_DEVICE=another-device:5555 ./scripts/deploy-android
 the app. Set `GODOT_BIN`, `ANDROID_HOME`, `JAVA_HOME`, or `APKSIGNER_BIN` when
 your local tool paths differ. Set `ANDROID_LAUNCHER_ACTIVITY` only when using a
 custom Android activity template.
+
+## Web version
+
+The `Web` export preset builds a single-threaded portrait web build into
+`build/web/` (no cross-origin isolation headers needed).
+
+```bash
+./scripts/build-web
+```
+
+`scripts/serve-web` serves `build/web` on `127.0.0.1:8096` and sends the
+precompressed `.gz` files to browsers that accept gzip. On this machine it runs
+as the user service `g-mcqueen-web.service`, and Tailscale Serve publishes it
+to the tailnet:
+
+```bash
+systemctl --user enable --now g-mcqueen-web.service
+tailscale serve --bg --https=8443 http://127.0.0.1:8096
+```
+
+Play at `https://pod-nucboxg5.tail29651f.ts.net:8443/`. After rebuilding, a
+page reload picks up the new build. Stop publishing with
+`tailscale serve --https=8443 off`.

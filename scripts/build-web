@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+godot_bin=${GODOT_BIN:-"$HOME/.local/bin/godot"}
+web_dir="$project_dir/build/web"
+
+if [[ ! -x "$godot_bin" ]]; then
+  echo "Godot was not found at $godot_bin" >&2
+  exit 1
+fi
+
+mkdir -p "$project_dir/build"
+web_tmp=$(mktemp -d "$project_dir/build/.web.XXXXXX")
+trap 'rm -rf -- "$web_tmp"' EXIT
+
+"$godot_bin" --headless --path "$project_dir" \
+  --export-release Web "$web_tmp/index.html"
+
+if [[ ! -s "$web_tmp/index.html" || ! -s "$web_tmp/index.wasm" ]]; then
+  echo "Godot did not produce a web build." >&2
+  exit 1
+fi
+
+# Precompress the large files; scripts/serve-web sends these to gzip clients.
+for asset in "$web_tmp"/index.{wasm,js}; do
+  gzip -9 -k -n -- "$asset"
+done
+
+# Swap the finished export in so a server never sees a half-written build.
+chmod -R a+rX "$web_tmp"
+rm -rf -- "$web_dir.old"
+if [[ -d "$web_dir" ]]; then
+  mv -- "$web_dir" "$web_dir.old"
+fi
+mv -- "$web_tmp" "$web_dir"
+rm -rf -- "$web_dir.old"
+trap - EXIT
+
+echo "Web build ready: $web_dir/index.html"

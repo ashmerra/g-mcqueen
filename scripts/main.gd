@@ -16,7 +16,7 @@ const PIPE_WIDTH := 250.0
 const SHAFT_HALF := 103.0
 const COLLAR_HALF := 112.0
 const CAR_H := 180.0
-const GAP_HEIGHT := 660.0
+const GAP_HEIGHT := 560.0
 const PIPE_SPEED := 355.0
 const GRAVITY := 1800.0
 const FLAP_VELOCITY := -670.0
@@ -260,8 +260,8 @@ func _process(delta: float) -> void:
 func _spawn_pipe(x: float) -> void:
 	pipes.append({"x": x, "gap_y": rng.randf_range(770.0, 1510.0), "passed": false})
 
-func _car_y(gap_y: float, top: bool) -> float:
-	return gap_y - GAP_HEIGHT * 0.5 - CAR_H if top else gap_y + GAP_HEIGHT * 0.5
+func _car_y(gap_y: float) -> float:
+	return gap_y + GAP_HEIGHT * 0.5
 
 func _check_pipe_collision() -> void:
 	var bird := Vector2(BIRD_X, bird_y)
@@ -269,12 +269,13 @@ func _check_pipe_collision() -> void:
 		var cx := float(pipe.x) + PIPE_WIDTH * 0.5
 		if absf(bird.x - cx) > 140.0 + BIRD_RADIUS:
 			continue
-		for top: bool in [true, false]:
-			var car_y := _car_y(float(pipe.gap_y), top)
-			var shaft := Rect2(cx - SHAFT_HALF, -400.0, SHAFT_HALF * 2.0, car_y + 400.0) if top else Rect2(cx - SHAFT_HALF, car_y + CAR_H, SHAFT_HALF * 2.0, FLOOR_Y - car_y - CAR_H)
-			if _circle_hits_rect(bird, shaft) or _circle_hits_polygon(bird - Vector2(cx, car_y), car_hitbox):
-				_end_game(true)
-				return
+		var top_end := float(pipe.gap_y) - GAP_HEIGHT * 0.5
+		var car_y := _car_y(float(pipe.gap_y))
+		var top_shaft := Rect2(cx - SHAFT_HALF, -400.0, SHAFT_HALF * 2.0, top_end + 400.0)
+		var bottom_shaft := Rect2(cx - SHAFT_HALF, car_y + CAR_H, SHAFT_HALF * 2.0, FLOOR_Y - car_y - CAR_H)
+		if _circle_hits_rect(bird, top_shaft) or _circle_hits_rect(bird, bottom_shaft) or _circle_hits_polygon(bird - Vector2(cx, car_y), car_hitbox):
+			_end_game(true)
+			return
 
 func _circle_hits_rect(center: Vector2, rect: Rect2) -> bool:
 	var closest := center.clamp(rect.position, rect.end)
@@ -554,7 +555,8 @@ func _draw_floor() -> void:
 
 func _draw_mcqueen_pillar(x: float, gap_y: float, top: bool) -> void:
 	var cx := x + PIPE_WIDTH * 0.5
-	var car_y := _car_y(gap_y, top)
+	# Only the bottom pillar carries a car; the top pillar's shaft reaches the gap.
+	var car_y := gap_y - GAP_HEIGHT * 0.5 if top else _car_y(gap_y)
 	var shaft_from := -40.0 if top else car_y + CAR_H
 	var shaft_to := car_y if top else FLOOR_Y
 	for i in range(SHAFT_STOPS.size() - 1):
@@ -566,10 +568,11 @@ func _draw_mcqueen_pillar(x: float, gap_y: float, top: bool) -> void:
 	var dir := -1.0 if top else 1.0
 	var start_y := car_y if top else car_y + CAR_H
 	_draw_shaft_decals(cx, start_y, dir)
-	var collar_y := car_y - 12.0 if top else car_y + CAR_H - 8.0
+	var collar_y := car_y - 22.0 if top else car_y + CAR_H - 8.0
 	draw_polygon(PackedVector2Array([Vector2(cx - COLLAR_HALF, collar_y), Vector2(cx + COLLAR_HALF, collar_y), Vector2(cx + COLLAR_HALF, collar_y + 22), Vector2(cx - COLLAR_HALF, collar_y + 22)]), PackedColorArray([CHROME, CHROME_SHADE, Color("#5d6670"), Color("#c9d1d8")]))
 	draw_rect(Rect2(cx - COLLAR_HALF, collar_y, COLLAR_HALF * 2.0, 22), INK, false, 3.0)
-	_draw_mcqueen_face(Vector2(cx, car_y))
+	if not top:
+		_draw_mcqueen_face(Vector2(cx, car_y))
 
 ## Side livery read along the pillar: race number, lightning bolt, sponsors.
 func _draw_shaft_decals(cx: float, start_y: float, dir: float) -> void:
